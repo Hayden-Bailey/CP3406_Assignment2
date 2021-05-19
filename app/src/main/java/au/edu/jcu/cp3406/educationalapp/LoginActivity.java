@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -24,15 +25,43 @@ public class LoginActivity extends AppCompatActivity {
         createAccount = findViewById(R.id.createAccount);
         loginEmail = findViewById(R.id.loginEmail);
         loginPassword = findViewById(R.id.loginPassword);
+        loginDatabaseHelper = new LoginDatabaseHelper(this);
 
-        loginDatabaseHelper = new LoginDatabseHelper(this);
+        createAccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String email = loginEmail.getText().toString();
+                String password = loginPassword.getText().toString();
 
+                if (email.equals("") || !email.contains("@") || !email.contains(".com")) {
+                    popupMessage("Please input a valid email address");
+                } else if (password.equals("") || password.length() < 6) {
+                    popupMessage("Please input a valid password (greater than 5 characters)");
+                } else {
+                    createAccount(email, password);
+                    loginEmail.setText("");
+                    loginPassword.setText("");
+                }
+            }
+        });
 
+    }
+
+    public void createAccount(String email, String password) {
+        boolean insertData = loginDatabaseHelper.addLoginDetails(email, password);
+
+        if (insertData) {
+            popupMessage("Account Created!");
+        } else {
+            popupMessage("Something went wrong!");
+        }
     }
 
     public void login(View view) {
     }
 
-    public void createAccount(View view) {
+
+    private void popupMessage(String popup) {
+        Toast.makeText(this, popup, Toast.LENGTH_SHORT).show();
     }
 }
