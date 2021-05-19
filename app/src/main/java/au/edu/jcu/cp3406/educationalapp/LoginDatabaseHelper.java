@@ -25,7 +25,8 @@ public class LoginDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String createTable = "CREATE TABLE " + TABLE_NAME + " (ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL1 + COL2 + " TEXT)";
+                COL1 + " TEXT NOT NULL, " +
+                COL2 + " TEXT NOT NULL)";
         db.execSQL(createTable);
     }
 
@@ -41,11 +42,12 @@ public class LoginDatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL1, email);
         contentValues.put(COL2, password);
 
-        Log.i(TAG, "addLoginDetails adding: email - " + email + " password - " + password + " to " + TABLE_NAME);
+//        Log.i(TAG, "addLoginDetails adding: email - " + email + " password - " + password + " to " + TABLE_NAME);
 
         long result = db.insert(TABLE_NAME, null, contentValues);
 
         return result != -1;
+
     }
 
     public boolean checkEmails(String email) {
@@ -69,6 +71,29 @@ public class LoginDatabaseHelper extends SQLiteOpenHelper {
         db.close();
 
         return emailExists;
-
     }
+
+    public boolean checkPassword(String email, String inputPassword) {
+        String dbPassword = null;
+        boolean passwordsMatch = false;
+        String selectQuery = "SELECT * FROM " + TABLE_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            if (cursor.getString(1).equals(email)) {
+                dbPassword = cursor.getString(2);
+                break;
+            }
+        }
+        cursor.close();
+        db.close();
+
+        assert dbPassword != null;
+        passwordsMatch = dbPassword.equals(inputPassword);
+        return passwordsMatch;
+    }
+
 }
